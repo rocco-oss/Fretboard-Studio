@@ -1,4 +1,7 @@
 node_modules/
+.sites-open/
+.sites-checkout/
+.sites-checkout-*/
 test-results/
 playwright-report/
 *.zip

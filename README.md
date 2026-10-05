@@ -1,6 +1,6 @@
 # Fretboard Studio
 
-An interactive guitar fretboard built with browser ES modules, accessible HTML, CSS, and Web Audio. Phase 10 completes the redesign with grouped inspector tools, contextual guidance, clearer study/layer feedback, responsive text reflow and measured rendering polish. Theory, practice, Studio, appearance, audio and live input share one workspace. There are **no browser runtime dependencies**.
+An interactive guitar fretboard built with browser ES modules, accessible HTML, CSS, and Web Audio. Phase 10 completes the redesign with grouped inspector tools, contextual guidance, clearer study/layer feedback, responsive text reflow and measured rendering polish. Theory, practice, Studio, appearance, audio and live input share one workspace. The optional 3D view loads a locally bundled Three.js renderer on demand.
 
 ## Develop and verify
 
@@ -17,19 +17,29 @@ Open `http://127.0.0.1:3000`. The server serves production `dist`; rebuild after
 
 ```sh
 npm run check       # syntax checks across all production JavaScript modules
-npm test            # 142 deterministic unit tests
+npm test            # deterministic unit tests
 npm run typecheck   # strict TypeScript checking of JSDoc-typed JavaScript
 npm run lint        # ESLint: production code, scripts and tests
 npm run build       # clean static output with local import/asset checks
-npm run test:e2e    # 87 browser regression tests against dist
+npm run test:e2e    # browser regression tests against dist
 npm run validate   # all of the above, in order
 ```
 
-Unit tests run in one process with isolated fixtures and need no browser or network. Browser tests own a temporary local server and stop it afterward. TypeScript, ESLint and Playwright are development tools only. Google Fonts are optional; system fallback fonts work when fonts are unavailable.
+Unit tests run in one process with isolated fixtures and need no browser or network. Browser tests own a temporary local server and stop it afterward. TypeScript, ESLint, esbuild and Playwright are development tools only. Google Fonts are optional; system fallback fonts work when fonts are unavailable.
 
 ## Architecture
 
-`src/` is the editable application source. `dist/` is generated production output for static hosting; never hand-edit it. The build copies only browser assets, checks relative references, and removes obsolete output. Type-only contracts in `src/types/model.ts` are not emitted as JavaScript.
+`src/` is the editable application source. `dist/` is generated production output for static hosting; never hand-edit it. The build copies browser assets, checks relative references, bundles the 3D renderer with esbuild, and removes obsolete output. Type-only contracts in `src/types/model.ts` are not emitted as JavaScript.
+
+## 2D and 3D fretboards
+
+Use **2D / 3D** beside the note controls, or **View → Model**. The setting is saved with the workspace and supported by undo/redo and scene presets. The 3D view supports background dragging, scroll/pinch zoom and Reset camera. It uses the same playable note buttons, theory layers, input highlights, practice projection and Studio overlays as 2D. Orientation, handedness, visible range, capo, zoom and custom string counts remain available. Model/network/WebGL failures keep the 2D board playable and offer a retry.
+
+`src/assets/fretboard.glb` was exported from the supplied `Fretboard.blend` with Blender 5.2.2. The original neck, top, nut, fret and inlay meshes are retained; wood/metal finishes are applied for browser lighting. Strings are adapted to the selected instrument; necks longer than the source's 24 frets receive an extension. Source meshes remain local, with no CDN request or Blender installation required to run the app. To regenerate the asset with Blender 5.2 or later:
+
+```sh
+blender --background --disable-autoexec --python scripts/export-fretboard.py -- path/to/Fretboard.blend src/assets/fretboard.glb
+```
 
 - `theory/`: immutable catalogs, pitch/spelling/interval calculations, pattern descriptions, sequences, dynamic fret positions.
 - `workspace/`: normalized state, validated immutable actions, selector subscriptions, panel/dialog lifecycle, grouped history, command registry/palette and centralized shortcuts.
